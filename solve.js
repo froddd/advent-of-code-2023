@@ -4,7 +4,7 @@ const { join } = require('path');
 const args = process.argv.slice(2);
 const day = args[0];
 const part = args[1] || '1';
-const inputFile = join('./', day, args[2] ? args[2] : 'input.txt');
+const inputFile = join('./', day, args[2] ? args[2] : 'input');
 
 console.log(`Day ${day}, part ${part}${args[2] ? ` (test data from ${args[2]})` : ''}:`);
 
