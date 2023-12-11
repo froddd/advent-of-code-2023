@@ -1,4 +1,4 @@
-const expand = (input) => {
+const findEmptySpace = (input) => {
   const emptyRows = [];
   const emptyColumns = [];
 
@@ -12,6 +12,12 @@ const expand = (input) => {
       emptyColumns.push(i);
     }
   }
+
+  return [emptyRows, emptyColumns];
+};
+
+const expand = (input) => {
+  const [emptyRows, emptyColumns] = findEmptySpace(input);
 
   const universe = input.map((line) => {
     let newLine = line.split("");
@@ -62,7 +68,32 @@ const part1 = (input) => {
   }, 0);
 };
 
-const part2 = (input) => {};
+const part2 = (input) => {
+  const [emptyRows, emptyColumns] = findEmptySpace(input);
+  const galaxies = findGalaxies(input);
+
+  return galaxies.slice(0, -1).reduce((total, start, index) => {
+    galaxies.slice(index + 1).forEach((end) => {
+      let distance = Math.abs(end[0] - start[0]) + Math.abs(end[1] - start[1]);
+      emptyRows.forEach((row) => {
+        if (
+          (row > start[0] && row < end[0]) ||
+          (row < start[0] && row > end[0])
+        )
+          distance += 999_999;
+      });
+      emptyColumns.forEach((col) => {
+        if (
+          (col > start[1] && col < end[1]) ||
+          (col < start[1] && col > end[1])
+        )
+          distance += 999_999;
+      });
+      total += distance;
+    });
+    return total;
+  }, 0);
+};
 
 module.exports = {
   part1,
