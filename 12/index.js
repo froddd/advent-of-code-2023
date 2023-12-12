@@ -87,8 +87,8 @@ const part1 = (input) =>
     );
   }, 0);
 
-const part2 = (input) => {
-  return input.reduce((total, line) => {
+const part2 = (input) =>
+  input.reduce((total, line) => {
     const [pattern, blocks] = line.split(" ");
     const unfoldedPattern = Array(5).fill(pattern).join("?");
     const unfoldedBlocks = Array(5)
@@ -99,7 +99,6 @@ const part2 = (input) => {
 
     return total + countMatchingPatterns(unfoldedPattern, unfoldedBlocks);
   }, 0);
-};
 
 module.exports = {
   part1,
