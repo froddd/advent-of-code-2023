@@ -16,8 +16,7 @@ const checkLineSymmetry = (line, index) => {
   return isAxis;
 };
 
-const findValidPatternAxis = (pattern) => {
-  const axes = findLineAxes(pattern[0]);
+const findValidPatternAxis = (pattern, axes) => {
   let axesIndex = 0;
 
   while (axesIndex < axes.length) {
@@ -50,30 +49,96 @@ const findLineAxes = (pattern) => {
   return axes;
 };
 
-const part1 = (input) => {
-  // split into patterns
-  const patterns = input.reduce((patterns, line) => {
+const getPatterns = (input) =>
+  input.reduce((patterns, line) => {
     if (line === "" || !patterns.length) patterns.push([]);
     if (line !== "") patterns[patterns.length - 1].push(line);
     return patterns;
   }, []);
 
-  return patterns.reduce((total, pattern) => {
-    // Find axes of symmetry on line 1
-    const validVerticalAxis = findValidPatternAxis(pattern);
+const part1 = (input) =>
+  getPatterns(input).reduce((total, pattern) => {
+    const axes = findLineAxes(pattern[0]);
+    const validVerticalAxis = findValidPatternAxis(pattern, axes);
 
     if (validVerticalAxis) return total + validVerticalAxis;
 
     const transposed = pattern[0].split("").map((_, colIndex) => {
       return pattern.map((row) => row[colIndex]).join("");
     });
-    const validHorizontalAxis = findValidPatternAxis(transposed);
+    const horizontalAxes = findLineAxes(transposed[0]);
+    const validHorizontalAxis = findValidPatternAxis(
+      transposed,
+      horizontalAxes,
+    );
 
     return total + validHorizontalAxis * 100;
   }, 0);
-};
 
-const part2 = (input) => {};
+const part2 = (input) =>
+  getPatterns(input).reduce((total, pattern) => {
+    let [x, y] = [0, 0];
+    let testPatternTotal = 0;
+
+    // Find the original symmetry axis
+    let originalIsVertical = true;
+    const originalVerticalAxes = findLineAxes(pattern[0]);
+    let originalAxis = findValidPatternAxis(pattern, originalVerticalAxes);
+    if (!originalAxis) {
+      const transposed = pattern[0].split("").map((_, colIndex) => {
+        return pattern.map((row) => row[colIndex]).join("");
+      });
+      const originalHorizontalAxes = findLineAxes(transposed[0]);
+      originalAxis = findValidPatternAxis(transposed, originalHorizontalAxes);
+      if (originalAxis) originalIsVertical = false;
+    }
+
+    while (x < pattern[0].length && y < pattern.length) {
+      const testPattern = pattern.slice();
+      const testLine = pattern[y].split("");
+      testLine[x] = testLine[x] === "." ? "#" : ".";
+      testPattern[y] = testLine.join("");
+
+      let verticalAxes = findLineAxes(testPattern[0]);
+      if (originalIsVertical) {
+        verticalAxes = verticalAxes.filter((axis) => axis !== originalAxis);
+      }
+      const validVerticalAxis = findValidPatternAxis(testPattern, verticalAxes);
+
+      if (validVerticalAxis) {
+        testPatternTotal = validVerticalAxis;
+        break;
+      } else {
+        const transposed = testPattern[0].split("").map((_, colIndex) => {
+          return testPattern.map((row) => row[colIndex]).join("");
+        });
+
+        let horizontalAxes = findLineAxes(transposed[0]);
+        if (!originalIsVertical) {
+          horizontalAxes = horizontalAxes.filter(
+            (axis) => axis !== originalAxis,
+          );
+        }
+        const validHorizontalAxis = findValidPatternAxis(
+          transposed,
+          horizontalAxes,
+        );
+
+        if (validHorizontalAxis) {
+          testPatternTotal = validHorizontalAxis * 100;
+          break;
+        }
+      }
+
+      x++;
+      if (x === pattern[0].length) {
+        x = 0;
+        y++;
+      }
+    }
+
+    return total + testPatternTotal;
+  }, 0);
 
 module.exports = {
   part1,
