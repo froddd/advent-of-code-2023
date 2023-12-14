@@ -43,30 +43,50 @@ const part1 = (input) => {
   return Math.min(...endSeeds);
 };
 
+const seedExists = (seed, seedRanges) =>
+  seedRanges.find((range) => seed >= range[0] && seed <= range[1]);
+
 const part2 = (input) => {
-  const seedRanges = input
+  const seedRangesRaw = input
     .shift()
     .replace("seeds: ", "")
     .split(" ")
     .map(Number);
 
-  let lowestEndSeed = Infinity;
-  let processedSeeds = 0;
+  const seedRanges = [];
 
-  const maps = getMaps(input);
-
-  for (let i = 0; i < seedRanges.length; i += 2) {
-    console.log(`Range size: ${seedRanges[i + 1]}`);
-    for (let j = 0; j < seedRanges[i + 1]; j++) {
-      const value = mapSeed(seedRanges[i] + j, maps);
-
-      if (value < lowestEndSeed) lowestEndSeed = value;
-      processedSeeds++;
-    }
+  for (let i = 0; i < seedRangesRaw.length; i += 2) {
+    seedRanges.push([
+      seedRangesRaw[i],
+      seedRangesRaw[i] + seedRangesRaw[i + 1],
+    ]);
   }
 
-  console.log(`Total seeds processed: ${processedSeeds}`);
-  return lowestEndSeed;
+  const reversedMaps = getMaps(input).reverse();
+
+  // Reverse the problem: go from location 0 and see if we can find a matching seed by incrementing...
+  let location = 0;
+  let found = false;
+
+  while (!found) {
+    const seed = reversedMaps.reduce((seed, maps) => {
+      const matchingMap = maps.find(
+        (map) => map[0] <= seed && map[0] + map[2] >= seed,
+      );
+      if (matchingMap) {
+        return seed + (matchingMap[1] - matchingMap[0]);
+      }
+      return seed;
+    }, location);
+
+    if (seedExists(seed, seedRanges)) {
+      break;
+    }
+
+    location++;
+  }
+
+  return location;
 };
 
 module.exports = {
