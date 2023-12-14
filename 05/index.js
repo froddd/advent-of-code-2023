@@ -28,7 +28,7 @@ const mapSeed = (seed, maps) => {
   return value;
 };
 
-const mapSeeds = (seeds, maps) => seeds.map((seed) => mapSeeds(seed, maps));
+const mapSeeds = (seeds, maps) => seeds.map((seed) => mapSeed(seed, maps));
 
 const part1 = (input) => {
   const startSeeds = input
@@ -56,6 +56,7 @@ const part2 = (input) => {
   const maps = getMaps(input);
 
   for (let i = 0; i < seedRanges.length; i += 2) {
+    console.log(`Range size: ${seedRanges[i + 1]}`);
     for (let j = 0; j < seedRanges[i + 1]; j++) {
       const value = mapSeed(seedRanges[i] + j, maps);
 
