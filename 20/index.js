@@ -1,4 +1,4 @@
-const part1 = (input) => {
+const parseModules = (input) => {
   const modules = input.reduce((modules, line) => {
     const [def, destinationsRaw] = line.split("->").map((x) => x.trim());
     const destinations = destinationsRaw.split(",").map((x) => x.trim());
@@ -28,6 +28,12 @@ const part1 = (input) => {
       }
     });
   });
+
+  return modules;
+};
+
+const part1 = (input) => {
+  const modules = parseModules(input);
 
   const startState = JSON.stringify(modules);
 
@@ -89,7 +95,70 @@ const part1 = (input) => {
   return (1000 / i) * lowCount * (1000 / i) * highCount;
 };
 
-const part2 = (input) => {};
+const part2 = (input) => {
+  const modules = parseModules(input);
+
+  let rxSources = ["rx"];
+
+  while (rxSources.length <= 1) {
+    const parents = [];
+    for (const rxSource of rxSources) {
+      parents.push(
+        ...Object.entries(modules)
+          .filter(
+            ([_, entry]) =>
+              entry.type === "conjunction" &&
+              entry.destinations.includes(rxSource),
+          )
+          .map(([key]) => key),
+      );
+    }
+    rxSources = parents;
+  }
+
+  const rxSourcesCycles = [];
+  let buttonPresses = 0;
+
+  while (rxSourcesCycles.length < 4) {
+    buttonPresses++;
+
+    const queue = [["broadcaster", 0, "button"]];
+
+    while (queue.length > 0) {
+      const queueItem = queue.shift();
+      const currentKey = queueItem[0];
+      const module = modules[currentKey];
+      const pulse = queueItem[1];
+      const from = queueItem[2];
+
+      if (!module) continue;
+
+      let sendPulse = pulse;
+
+      if (module.type === "flipflop") {
+        if (pulse === 1) continue;
+
+        module.on = module.on === 0 ? 1 : 0;
+        sendPulse = module.on;
+      }
+
+      if (module.type === "conjunction") {
+        module.inputs[from] = pulse;
+        sendPulse = Object.values(module.inputs).every((x) => x === 1) ? 0 : 1;
+      }
+
+      if (rxSources.includes(currentKey) && sendPulse === 1) {
+        rxSourcesCycles.push([currentKey, buttonPresses]);
+      }
+
+      for (const destination of module.destinations) {
+        queue.push([destination, sendPulse, currentKey]);
+      }
+    }
+  }
+
+  return rxSourcesCycles.reduce((total, cycle) => total * cycle[1], 1);
+};
 
 module.exports = {
   part1,
