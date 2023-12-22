@@ -1,10 +1,12 @@
-const part1 = (input) => {
-  // Find the start
+const getStart = (input) => {
   const startLine = input.find((line) => line.includes("S"));
-  const start = [startLine.indexOf("S"), input.indexOf(startLine)];
+  return [startLine.indexOf("S"), input.indexOf(startLine)];
+};
+const part1 = (input) => {
+  const start = getStart(input);
 
   const steps = process.argv.slice().includes("test") ? 6 : 64;
-  let reached = [start.join(",")];
+  let reached = new Set([start.join(",")]);
   const cardinals = [
     [0, -1],
     [1, 0],
@@ -13,8 +15,8 @@ const part1 = (input) => {
   ];
 
   for (let i = 1; i <= steps; i++) {
-    let checkNext = reached.slice().map((x) => x.split(",").map(Number));
-    reached = [];
+    let checkNext = [...reached.values()].map((x) => x.split(",").map(Number));
+    reached = new Set();
     while (checkNext.length > 0) {
       const current = checkNext.shift();
       for (const cardinal of cardinals) {
@@ -25,16 +27,15 @@ const part1 = (input) => {
           dest[1] >= 0 &&
           dest[0] < input[0].length &&
           dest[1] < input.length &&
-          input[dest[1]][dest[0]] !== "#" &&
-          !reached.includes(destStr)
+          input[dest[1]][dest[0]] !== "#"
         ) {
-          reached.push(destStr);
+          reached.add(destStr);
         }
       }
     }
   }
 
-  return reached.length;
+  return reached.size;
 };
 
 const part2 = (input) => {};
